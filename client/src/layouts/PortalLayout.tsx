@@ -117,16 +117,18 @@ const NAV_GROUPS = [
 ];
 
 export function PortalLayout() {
-  const { view, setView, modules, lang, setLang } = useView();
+  const { view, setView, modules, lang, setLang, hasPermission } = useView();
   const [collapsed, setCollapsed] = useState(false);
   const [, setLocation] = useLocation();
   const [, matchParams] = useRoute<{ module: string }>("/module/:module");
   const currentModuleId = (matchParams?.module as ModuleId) || "dashboard";
 
-  const PageComponent = MODULE_PAGES[currentModuleId] || DashboardPage;
+  // If no permission, fallback to dashboard
+  const safeModuleId = hasPermission(currentModuleId) ? currentModuleId : "dashboard";
+  const PageComponent = MODULE_PAGES[safeModuleId] || DashboardPage;
 
   // Find the module info from MODULE_REGISTRY
-  const activeModule = MODULE_REGISTRY.find(m => m.id === currentModuleId) || modules[0];
+  const activeModule = MODULE_REGISTRY.find(m => m.id === safeModuleId) || modules[0];
 
   const navigateTo = (moduleId: ModuleId) => {
     setLocation(`/module/${moduleId}`);
@@ -179,7 +181,7 @@ export function PortalLayout() {
         <nav className="flex-1 overflow-y-auto py-2">
           {NAV_GROUPS.map((group) => {
             const visibleModules = group.modules
-              .map(id => MODULE_REGISTRY.find(m => m.id === id))
+              .map(id => modules.find(m => m.id === id))
               .filter(Boolean) as typeof modules;
             if (visibleModules.length === 0) return null;
 

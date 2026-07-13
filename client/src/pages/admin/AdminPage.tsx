@@ -5,8 +5,9 @@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatMMK } from "@/data/mockData";
-import { Settings, Users, Lock, FileText, ShieldCheck, Key, Globe, Eye } from "lucide-react";
+import { Settings, Users, Lock, FileText, ShieldCheck, Key, Globe, Eye, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { useView, ViewType as ViewTypeRole, ModuleId } from "@/contexts/ViewContext";
 import {
   EnterpriseCard,
   EnterpriseBadge,
@@ -16,12 +17,12 @@ import {
   ColumnDef,
   TableAction
 } from "@/components/EnterpriseComponents";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface ViewType {
-  id: string;
+interface RoleMetadata {
+  id: ViewTypeRole;
   label: string;
   description: string;
-  modules: string[];
 }
 
 interface AuditLog {
@@ -33,14 +34,14 @@ interface AuditLog {
   details: string;
 }
 
-const viewTypes: ViewType[] = [
-  { id: "HR", label: "HR", description: "Employee lifecycle, onboarding, payroll oversight", modules: ["Dashboard", "Employees", "Onboarding", "Payroll", "Reports"] },
-  { id: "Sales", label: "Sales", description: "Corporate portfolio, revenue, client health", modules: ["Dashboard", "Onboarding", "Companies", "Budget", "Reports"] },
-  { id: "Operations", label: "Operations", description: "Daily operations, disbursements, settlements", modules: ["Dashboard", "Employees", "Transactions", "Repayment", "Settlement", "Reports"] },
-  { id: "Back Office", label: "Back Office", description: "Transaction processing, verification, reconciliation", modules: ["Dashboard", "Transactions", "Repayment", "Settlement", "Errors", "Workflow"] },
-  { id: "Finance", label: "Finance", description: "GL ledger, accounting entries, financial health", modules: ["Dashboard", "Circle Ledger", "Fee Builder", "Reports", "Repayment"] },
-  { id: "Risk", label: "Risk", description: "Credit risk, compliance, fraud detection", modules: ["Dashboard", "Risk", "Write-Off", "Reports"] },
-  { id: "Platform Admin", label: "Platform Admin", description: "System configuration, policies, platform health", modules: ["All Modules"] },
+const roleMetadata: RoleMetadata[] = [
+  { id: "HR", label: "HR", description: "Employee lifecycle, onboarding, payroll oversight" },
+  { id: "Sales", label: "Sales", description: "Corporate portfolio, revenue, client health" },
+  { id: "Operations", label: "Operations", description: "Daily operations, disbursements, settlements" },
+  { id: "Back Office", label: "Back Office", description: "Transaction processing, verification, reconciliation" },
+  { id: "Finance", label: "Finance", description: "GL ledger, accounting entries, financial health" },
+  { id: "Risk", label: "Risk", description: "Credit risk, compliance, fraud detection" },
+  { id: "Platform Admin", label: "Platform Admin", description: "System configuration, policies, platform health" },
 ];
 
 const auditLog: AuditLog[] = [
@@ -52,35 +53,49 @@ const auditLog: AuditLog[] = [
 ];
 
 export function AdminPage() {
-  const [enabledModules, setEnabledModules] = useState<string[]>([
-    "dashboard", "employees", "onboarding", "transactions", "repayment",
-    "circle-ledger", "fee-builder", "budget", "risk", "reports",
-    "settlement", "payroll", "workflow", "writeoff", "form-creator", "notifications",
-  ]);
+  const { allModuleConfigs, rolePermissions, updateRolePermissions } = useView();
+  const [activeTab, setActiveTab] = useState("modules");
+  const [selectedRole, setSelectedRole] = useState<ViewTypeRole>("HR");
 
-  const viewTypeColumns: ColumnDef<ViewType>[] = [
+  const viewTypeColumns: ColumnDef<RoleMetadata>[] = [
     {
       id: "label",
       header: "View Type",
-      accessor: (vt) => <EnterpriseBadge variant="info" className="bg-[#1e3a5f] text-white border-[#1e3a5f] font-bold">{vt.label}</EnterpriseBadge>,
-      searchString: (vt) => vt.label
+      accessor: (rm) => <EnterpriseBadge variant="info" className="bg-[#1e3a5f] text-white border-[#1e3a5f] font-bold">{rm.label}</EnterpriseBadge>,
+      searchString: (rm) => rm.label
     },
     {
       id: "description",
       header: "Description",
-      accessor: (vt) => <span className="text-[12px] text-[#5a6b7c]">{vt.description}</span>,
-      searchString: (vt) => vt.description
+      accessor: (rm) => <span className="text-[12px] text-[#5a6b7c]">{rm.description}</span>,
+      searchString: (rm) => rm.description
     },
     {
       id: "modules",
       header: "Accessible Modules",
-      accessor: (vt) => (
+      accessor: (rm) => (
         <div className="flex flex-wrap gap-1">
-          {vt.modules.map(m => (
-            <span key={m} className="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-[#5a6b7c] font-bold uppercase tracking-wider">{m}</span>
-          ))}
+          {rolePermissions[rm.id].map(mId => {
+            const mod = allModuleConfigs.find(config => config.id === mId);
+            return (
+              <span key={mId} className="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-[#5a6b7c] font-bold uppercase tracking-wider">
+                {mod?.label || mId}
+              </span>
+            );
+          })}
         </div>
       )
+    }
+  ];
+
+  const roleActions: TableAction<RoleMetadata>[] = [
+    {
+      label: "Configure Modules",
+      icon: <Settings className="w-3.5 h-3.5" />,
+      onClick: (rm) => {
+        setSelectedRole(rm.id);
+        setActiveTab("modules");
+      }
     }
   ];
 
@@ -121,6 +136,17 @@ export function AdminPage() {
     }
   ];
 
+  const handleToggleModule = (mId: ModuleId, enabled: boolean) => {
+    const currentModules = rolePermissions[selectedRole];
+    if (enabled) {
+      if (!currentModules.includes(mId)) {
+        updateRolePermissions(selectedRole, [...currentModules, mId]);
+      }
+    } else {
+      updateRolePermissions(selectedRole, currentModules.filter(id => id !== mId));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -132,7 +158,7 @@ export function AdminPage() {
 
       <LedgerDivider />
 
-      <Tabs defaultValue="modules" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
           <TabsTrigger value="modules"><Settings className="w-3.5 h-3.5" /> Modules</TabsTrigger>
           <TabsTrigger value="roles"><Users className="w-3.5 h-3.5" /> View Types</TabsTrigger>
@@ -142,34 +168,39 @@ export function AdminPage() {
 
         <TabsContent value="modules" className="outline-none space-y-4">
           <EnterpriseCard className="p-4 border-[#d1d9e0] shadow-sm">
-            <h3 className="text-[11px] font-bold text-[#1e3a5f] uppercase tracking-widest mb-4">Module Toggle</h3>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-[11px] font-bold text-[#1e3a5f] uppercase tracking-widest">Module Access Configuration</h3>
+                <p className="text-[10px] text-[#5a6b7c] uppercase mt-1">Select a role to configure accessible modules</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-[#1e3a5f] uppercase">Configuring:</span>
+                <Select value={selectedRole} onValueChange={(val) => setSelectedRole(val as ViewTypeRole)}>
+                  <SelectTrigger className="w-[180px] h-8 text-[11px] font-bold border-[#d1d9e0]">
+                    <SelectValue placeholder="Select Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roleMetadata.map(role => (
+                      <SelectItem key={role.id} value={role.id} className="text-[11px]">
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                { key: "dashboard", label: "Dashboard", desc: "KPI hub with role-adaptive metrics" },
-                { key: "employees", label: "Employee Management", desc: "Employee lifecycle and verification" },
-                { key: "onboarding", label: "Company Onboarding", desc: "Pipeline from submitted to active" },
-                { key: "transactions", label: "Transaction Monitor", desc: "Full transaction lifecycle" },
-                { key: "repayment", label: "Repayment & Settlement", desc: "Workflow and maker-checker" },
-                { key: "circle-ledger", label: "Circle Ledger (GL)", desc: "Double-entry accounting" },
-                { key: "fee-builder", label: "Fee Builder", desc: "Policy configuration per company" },
-                { key: "budget", label: "Budget Management", desc: "Allocation and utilization" },
-                { key: "risk", label: "Risk & Backoffice", desc: "Credit scoring and fraud detection" },
-                { key: "reports", label: "Reports Center", desc: "Financial statements and audit trail" },
-                { key: "settlement", label: "Settlement Verification", desc: "Maker-checker protocol" },
-                { key: "payroll", label: "Payroll & Deduction", desc: "Deduction tracking and reconciliation" },
-                { key: "workflow", label: "Workflow Engine", desc: "Case management and SLA" },
-                { key: "writeoff", label: "Write-Off", desc: "Loss provision management" },
-                { key: "form-creator", label: "Form Builder", desc: "EWA request form templates" },
-                { key: "notifications", label: "Notifications", desc: "Multi-channel notifications" },
-              ].map(mod => (
-                <div key={mod.key} className="flex items-start gap-3 p-3 rounded-[3px] bg-[#f8fafc] border border-[#d1d9e0] transition-colors hover:bg-white">
-                  <Switch checked={enabledModules.includes(mod.key)} onCheckedChange={(checked) => {
-                    if (checked) setEnabledModules([...enabledModules, mod.key]);
-                    else setEnabledModules(enabledModules.filter(k => k !== mod.key));
-                  }} className="mt-1" />
+              {allModuleConfigs.map(mod => (
+                <div key={mod.id} className="flex items-start gap-3 p-3 rounded-[3px] bg-[#f8fafc] border border-[#d1d9e0] transition-colors hover:bg-white">
+                  <Switch 
+                    checked={rolePermissions[selectedRole].includes(mod.id)} 
+                    onCheckedChange={(checked) => handleToggleModule(mod.id, checked)}
+                    className="mt-1" 
+                  />
                   <div>
                     <p className="text-[12px] font-bold text-[#1e3a5f]">{mod.label}</p>
-                    <p className="text-[10px] text-[#5a6b7c] mt-0.5 leading-tight">{mod.desc}</p>
+                    <p className="text-[10px] text-[#5a6b7c] mt-0.5 leading-tight">Module ID: {mod.id}</p>
                   </div>
                 </div>
               ))}
@@ -179,9 +210,10 @@ export function AdminPage() {
 
         <TabsContent value="roles" className="outline-none">
           <EnterpriseTable
-            data={viewTypes}
+            data={roleMetadata}
             columns={viewTypeColumns}
-            rowKey={(vt) => vt.id}
+            rowKey={(rm) => rm.id}
+            actions={roleActions}
             searchPlaceholder="Search view types..."
           />
         </TabsContent>
