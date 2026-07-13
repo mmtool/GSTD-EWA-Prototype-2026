@@ -1,0 +1,7 @@
+{
+  "name": "EWA 3.0 Enterprise Platform",
+  "description": "EWA 3.0 2026 Enterprise Platform Prototype featuring robust neobrutalist fintech design, enterprise modules, and role-based view switching.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
