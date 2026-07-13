@@ -167,7 +167,7 @@ export function PortalLayout() {
         {/* Logo Area */}
         <div className={`flex items-center gap-2.5 px-3 py-4 border-b border-white/8 ${collapsed ? "justify-center px-0" : ""}`}>
           <div className="w-8 h-8 rounded-[3px] bg-[#0ea5e9]/20 flex items-center justify-center shrink-0 border border-[#0ea5e9]/30">
-            <img src="/manus-storage/ewa-logo_4f36e433.png" alt="EWA" className="w-6 h-6 object-contain" />
+            <img src="https://ewa-group.com/wp-content/uploads/2020/07/EWA_Presentation.pdf-image-006-removebg-preview.png" alt="EWA" className="w-6 h-6 object-contain" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
