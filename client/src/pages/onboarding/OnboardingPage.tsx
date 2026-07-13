@@ -346,11 +346,11 @@ export function OnboardingPage() {
         <div className="flex items-center gap-2">
           <EnterpriseButton variant="secondary" className="h-8 py-0 px-3 flex items-center gap-1 text-[10px]"
             onClick={() => setAddEmployeeOpen(true)}>
-            <Plus className="w-3.5 h-3.5" /> Add Employee
+            <Plus className="w-3.5 h-3.5" /> Add
           </EnterpriseButton>
           <EnterpriseButton variant="primary" className="h-8 py-0 px-3 flex items-center gap-1 text-[10px] bg-[#0ea5e9] text-white"
             onClick={() => { setImportWizardOpen(true); setWizardStep(0); }}>
-            <Upload className="w-3.5 h-3.5" /> Bulk Import
+            <Upload className="w-3.5 h-3.5" /> Import
           </EnterpriseButton>
         </div>
       </div>

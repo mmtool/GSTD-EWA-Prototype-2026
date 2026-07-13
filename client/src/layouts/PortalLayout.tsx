@@ -4,7 +4,7 @@
  * Design: Enterprise Fintech — Navy (#1e3a5f) + Teal (#0ea5e9) | Sharp corners | Structured layout
  */
 import { useState } from "react";
-import { useLocation, useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { useView, type ViewType, type ModuleId } from "@/contexts/ViewContext";
 import { MODULE_REGISTRY } from "@/contexts/ViewContext";
 import {
@@ -165,7 +165,7 @@ export function PortalLayout() {
         }`}
       >
         {/* Logo Area */}
-        <div className={`flex items-center gap-2.5 px-3 py-4 border-b border-white/8 ${collapsed ? "justify-center px-0" : ""}`}>
+        <Link href="/" className={`flex items-center gap-2.5 px-3 py-4 border-b border-white/8 hover:bg-white/5 transition-colors cursor-pointer ${collapsed ? "justify-center px-0" : ""}`}>
           <div className="w-8 h-8 rounded-[3px] bg-[#0ea5e9]/20 flex items-center justify-center shrink-0 border border-[#0ea5e9]/30">
             <img src="https://ewa-group.com/wp-content/uploads/2020/07/EWA_Presentation.pdf-image-006-removebg-preview.png" alt="EWA" className="w-6 h-6 object-contain" />
           </div>
@@ -175,7 +175,7 @@ export function PortalLayout() {
               <p className="text-[9px] text-white/40 tracking-wider uppercase">Enterprise Platform</p>
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Grouped Navigation */}
         <nav className="flex-1 overflow-y-auto py-2">

@@ -189,7 +189,7 @@ export function EmployeesPage() {
           </EnterpriseButton>
           {(view === "HR" || view === "Operations" || view === "Platform Admin") && (
             <EnterpriseButton variant="primary" className="h-8 py-0 px-3 flex items-center gap-1 text-[10px]">
-              <Plus className="w-3.5 h-3.5" /> Add Employee
+              <Plus className="w-3.5 h-3.5" /> Add
             </EnterpriseButton>
           )}
         </div>

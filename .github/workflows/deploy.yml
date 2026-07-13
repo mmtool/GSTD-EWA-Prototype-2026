@@ -28,22 +28,19 @@ jobs:
 
       - name: Build
         run: |
-          npx vite build
+          npm run build
+          # The build output goes to dist/public (configured in vite.config.ts)
           # Create 404 page for SPA routing support on GitHub Pages
           if [ -f dist/public/index.html ]; then
             cp dist/public/index.html dist/public/404.html
             touch dist/public/.nojekyll
+            echo "Build successful. index.html found."
           else
             echo "Error: dist/public/index.html not found!"
+            echo "Checking current directory structure..."
             ls -R
             exit 1
           fi
-
-      - name: Debug Build Output
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          ls -R dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
