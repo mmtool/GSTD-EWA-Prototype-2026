@@ -21,15 +21,29 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Build
         run: |
-          npm run build
-          cp dist/public/index.html dist/public/404.html
+          npx vite build
+          # Create 404 page for SPA routing support on GitHub Pages
+          if [ -f dist/public/index.html ]; then
+            cp dist/public/index.html dist/public/404.html
+            touch dist/public/.nojekyll
+          else
+            echo "Error: dist/public/index.html not found!"
+            ls -R
+            exit 1
+          fi
+
+      - name: Debug Build Output
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          ls -R dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

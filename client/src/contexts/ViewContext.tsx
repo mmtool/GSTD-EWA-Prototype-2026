@@ -100,10 +100,21 @@ const ViewContext = createContext<ViewContextType | null>(null);
 export function ViewProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<ViewType>("HR");
   const [lang, setLang] = useState<"en" | "my">("en");
-  const [rolePermissions, setRolePermissions] = useState<Record<ViewType, ModuleId[]>>(DEFAULT_ROLE_PERMISSIONS);
+  const [rolePermissions, setRolePermissions] = useState<Record<ViewType, ModuleId[]>>(() => {
+    try {
+      const saved = localStorage.getItem("rolePermissions");
+      return saved ? JSON.parse(saved) : DEFAULT_ROLE_PERMISSIONS;
+    } catch {
+      return DEFAULT_ROLE_PERMISSIONS;
+    }
+  });
 
   const updateRolePermissions = useCallback((v: ViewType, ids: ModuleId[]) => {
-    setRolePermissions(prev => ({ ...prev, [v]: ids }));
+    setRolePermissions(prev => {
+      const next = { ...prev, [v]: ids };
+      localStorage.setItem("rolePermissions", JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const activeModuleIds = rolePermissions[view];
