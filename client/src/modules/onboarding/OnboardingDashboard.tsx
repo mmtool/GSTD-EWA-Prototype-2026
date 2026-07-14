@@ -22,16 +22,17 @@ import { MOCK_ONBOARDING_REQUESTS, MOCK_TASKS } from "./mockData";
 import { OnboardingRequest, OnboardingTask, STAGE_NAMES } from "./types";
 
 interface OnboardingDashboardProps {
+  requests?: OnboardingRequest[];
   onNewOnboarding?: () => void;
   onViewDetails?: (request: OnboardingRequest) => void;
 }
 
-export default function OnboardingDashboard({ onNewOnboarding, onViewDetails }: OnboardingDashboardProps) {
+export default function OnboardingDashboard({ requests = MOCK_ONBOARDING_REQUESTS, onNewOnboarding, onViewDetails }: OnboardingDashboardProps) {
   const [activeTab, setActiveTab] = useState<"requests" | "tasks">("requests");
   const [searchQuery, setSearchQuery] = useState("");
 
   const pendingTasksCount = MOCK_TASKS.filter(t => t.status === "pending").length;
-  const returnedRequestsCount = MOCK_ONBOARDING_REQUESTS.filter(r => r.status === "returned").length;
+  const returnedRequestsCount = requests.filter(r => r.status === "returned").length;
 
   return (
     <div className="flex flex-col h-full bg-background font-sans">
@@ -109,13 +110,15 @@ export default function OnboardingDashboard({ onNewOnboarding, onViewDetails }: 
                 exit={{ opacity: 0 }}
                 className="space-y-2.5"
               >
-                {MOCK_ONBOARDING_REQUESTS.map((request) => (
-                  <RequestCard 
-                    key={request.id} 
-                    request={request} 
-                    onClick={() => onViewDetails?.(request)}
-                  />
-                ))}
+                {requests
+                  .filter((r) => r.companyName.toLowerCase().includes(searchQuery.toLowerCase()) || r.id.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((request) => (
+                    <RequestCard 
+                      key={request.id} 
+                      request={request} 
+                      onClick={() => onViewDetails?.(request)}
+                    />
+                  ))}
               </motion.div>
             ) : (
               <motion.div 
